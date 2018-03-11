@@ -136,13 +136,6 @@ sub setup_gladmin {
     }
     $conf =~ s/%ADMIN/$admin/g;
 
-    _print( "conf/gitolite.conf", $conf ) if not -f "conf/gitolite.conf";
-
-    if ($pubkey) {
-        _mkdir("keydir");
-        _print( "keydir/$admin.pub", $pubkey_content );
-    }
-
     # set up the admin repo in repo-base
 
     _chdir();
@@ -155,6 +148,15 @@ sub setup_gladmin {
 
     $ENV{GIT_WORK_TREE} = $rc{GL_ADMIN_BASE};
     _chdir("$rc{GL_REPO_BASE}/gitolite-admin.git");
+    _system("git reset --hard");
+    # use existing files if available
+    _print( "$rc{GL_ADMIN_BASE}/conf/gitolite.conf", $conf ) if not -f "$rc{GL_ADMIN_BASE}/conf/gitolite.conf";
+
+    if ($pubkey) {
+        _mkdir("$rc{GL_ADMIN_BASE}/keydir") if not -d "$rc{GL_ADMIN_BASE}/keydir";
+        _print( "$rc{GL_ADMIN_BASE}/keydir/$admin.pub", $pubkey_content );
+    }
+
     _system("git add conf/gitolite.conf");
     _system("git add keydir/$admin.pub") if $pubkey;
     tsh_try("git config --get user.email") or tsh_run( "git config user.email $ENV{USER}\@" . `hostname` );

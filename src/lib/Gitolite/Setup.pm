@@ -156,7 +156,7 @@ sub setup_gladmin {
     $ENV{GIT_WORK_TREE} = $rc{GL_ADMIN_BASE};
     _chdir("$rc{GL_REPO_BASE}/gitolite-admin.git");
     _system("git add conf/gitolite.conf");
-    _system("git add keydir") if $pubkey;
+    _system("git add keydir/$admin.pub") if $pubkey;
     tsh_try("git config --get user.email") or tsh_run( "git config user.email $ENV{USER}\@" . `hostname` );
     tsh_try("git config --get user.name")  or tsh_run( "git config user.name '$ENV{USER} on '" . `hostname` );
     tsh_try("git diff --cached --quiet")

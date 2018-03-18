@@ -50,6 +50,31 @@ do
     git push -f $GL_REPO_BASE/$repo.git :$ref || die "FATAL: failed to delete $ref"
 done
 
+# make sure HEAD points to valid ref
+cd $GL_REPO_BASE/$repo.git
+all_refs_repo=`git for-each-ref refs/heads refs/tags '--format=%(refname)'`
+if [ -n "$all_refs_repo" ]; then
+    head=`git symbolic-ref HEAD`
+    head_valid=false
+
+    for ref in $all_refs_repo
+    do
+        if [ "$ref" = "$head" ] ; then
+            head_valid=true
+        fi
+        if [ -z "$alt_head" ] ; then
+            # save the first found ref as a possible alternative to the current
+            # HEAD ref.
+            alt_head="$ref"
+        fi
+    done
+
+    if [ "$head_valid" = false ] ; then
+        # point HEAD to the first valid ref
+        git symbolic-ref HEAD "$alt_head"
+    fi
+fi
+
 # remove all tags no longer reachable
 cd $GL_REPO_BASE/$repo.git
 
